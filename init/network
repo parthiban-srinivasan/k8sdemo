@@ -1,0 +1,131 @@
+#!/bin/bash
+
+# Prompt network name, !! custom network !!
+
+read -p "Enter custom network name: " IN_NETWORK
+
+if [ -z "$IN_NETWORK" ]; then
+   	IN_NETWORK="default" 
+fi
+
+echo "Entered network name: " $IN_NETWORK
+
+# Prompt subnetwork region, !! 
+
+read -p "Enter subnetwork region: " IN_SUBNET_REGION
+
+if [ -z "$(gcloud compute regions list --filter=name=$IN_SUBNET_REGION --format='value(name)')" ]; then
+    echo "non-existing region specified "
+fi
+
+gcloud config set compute/region $IN_SUBNET_REGION
+
+# Prompt ip range for given subnetwork region, !!  
+
+read -p "Enter subnetwork IP Range (CIDR format) for  $IN_SUBNET_REGION region, clue 10.150.0.0/20 !! " SUBNET_IP_RANGE
+if [ -z "$SUBNET_IP_RANGE" ]; then
+   	echo "invalid ip-range specified, assumed '10.150.0.0/20' "
+   	SUBNET_IP_RANGE="10.150.0.0/20"
+fi
+
+# Derive subnetwork name - region specific
+
+SUBNETS="subnet-$IN_NETWORK-$IN_SUBNET_REGION"
+echo "Subnet name will be $SUBNETS: "
+read -p "Press Y to proceed: "  init_net_okay
+
+if [ $init_net_okay != "Y" ]; then
+   echo "Quiting setup......"
+   return
+fi
+
+# Create virtual network via gcloud
+gcloud compute networks create $IN_NETWORK --mode  custom 
+
+sleep 10;
+
+echo "$IN_NETWORK"
+echo "$ANY_IP_SOURCE_RANGE"
+echo "$SUBNET_IP_RANGE"
+echo "$SUBNETS"
+echo "$IN_SUBNET_REGION"
+
+# Create subnet  via gcloud
+gcloud compute networks subnets create $SUBNETS --network=$IN_NETWORK --range=$SUBNET_IP_RANGE --region=$IN_SUBNET_REGION
+
+ANY_IP_SOURCE_RANGE="0.0.0.0/0"
+
+## Create firewalls rules for SSH access   via gcloud
+FIREWALL_SSH_NAME="firewall-$IN_NETWORK-allow-ssh-all"
+
+echo "$FIREWALL_SSH_NAME"
+
+sleep 5;
+
+gcloud compute firewall-rules create $FIREWALL_SSH_NAME --allow=tcp:22 --network=$IN_NETWORK --target-tags=ssh --source-ranges=$ANY_IP_SOURCE_RANGE
+         
+FIREWALL_TCP_NAME="firewall-$IN_NETWORK-allow-tcp-udp-icmp-internal"
+echo "$FIREWALL_TCP_NAME"
+
+sleep 2;
+
+gcloud compute firewall-rules create $FIREWALL_TCP_NAME --allow=tcp:1-65535,udp:1-65535,icmp --network=$IN_NETWORK --source-ranges=$SUBNET_IP_RANGE
+
+
+
+# ***********************
+
+read -p "Enter 'Y' if you want to set-up another subnets wthin $IN_NETWORK network: " another_subnet
+
+if [ "$another_subnet" != "Y" ]; then
+   	return
+fi
+
+# Prompt subnetwork region, !! 
+
+read -p "Enter second subnetwork region: " IN_SUBNET_REGION_2
+
+if [ -z "$(gcloud compute regions list --filter=name=$IN_SUBNET_REGION_2 --format='value(name)')" ]; then
+    echo "non-existing region specified "
+fi
+
+# Prompt ip range for given subnetwork region, !!  
+
+read -p "Enter subnetwork IP Range (CIDR format) for  $IN_SUBNET_REGION_2 region, clue 10.155.0.0/20 !! " SUBNET_2_IP_RANGE
+if [ -z "$SUBNET_2_IP_RANGE" ]; then
+   	echo "invalid ip-range specified, assumed '10.155.0.0/20' "
+   	SUBNET_2_IP_RANGE="10.155.0.0/20"
+fi
+
+# Derive subnetwork name - region specific
+
+SUBNETS_2="subnet-$IN_NETWORK-$IN_SUBNET_REGION_2"
+echo "Subnet name will be $SUBNETS_2: "
+read -p "Press Y to proceed: "  abort_yes
+
+if [ $abort_yes != "Y" ]; then
+   echo "Quiting setup......"
+   return
+fi
+
+sleep 3;
+
+echo " "
+echo "Subnet summary"
+echo "$IN_NETWORK"
+echo "$SUBNETS_2"
+echo "$IN_SUBNET_REGION_2"
+echo "$ANY_IP_SOURCE_RANGE"
+echo "$SUBNET_2_IP_RANGE"
+
+# Create subnet  via gcloud
+gcloud compute networks subnets create $SUBNETS_2 --network=$IN_NETWORK --range=$SUBNET_2_IP_RANGE --region=$IN_SUBNET_REGION_2
+
+sleep 2;
+
+# Update firewall to include new subnet IP range
+FIREWALL_TCP_NAME="firewall-$IN_NETWORK-allow-tcp-udp-icmp-internal"
+echo "$FIREWALL_TCP_NAME"
+
+gcloud compute firewall-rules update $FIREWALL_TCP_NAME --allow=tcp:1-65535,udp:1-65535,icmp  \
+                 --source-ranges=$SUBNET_IP_RANGE,$SUBNET_2_IP_RANGE
