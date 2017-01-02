@@ -1,3 +1,16 @@
-Hello World
+# Init Spinnaker
 
-Init Spinnaker
+# Running Spinnaker on Compute Engine
+
+# #Step# 1: Create project 
+
+# #Step# 2: Ensure APIs are enabled.
+
+#         Esp. Compute Engine.
+
+# Step 3: Obtain
+
+# Create new project via Gcloud
+# Org & Folders are mutually exclusive
+
+gcloud alpha projects create parthi-example-proj  --name="Happy project" --labels=type=demo
