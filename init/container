@@ -95,7 +95,7 @@ k8s_cluster_setup
  
 echo " "
 echo " "
-echo "Want to set-up another Kubernetes cluster?"
+echo "Ready to set-up new Kubernetes cluster?"
 echo " "
 read -p "Press Y to proceed: " another_k8s_yes
 

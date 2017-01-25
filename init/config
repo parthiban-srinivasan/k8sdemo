@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #-input proj
-PROJECT=packers-148014
+PROJECT=spinnaker-launcher-main
 
-ZONE_PRIME=us-central1-a
+ZONE_PRIME=us-east1-a
 
 #REGION=us-central1
 
-ACC=parthi.geo@gmail.com
+ACC=parthi.poc@gmail.com
 
 echo $PROJECT
 echo $ZONE_PRIME
