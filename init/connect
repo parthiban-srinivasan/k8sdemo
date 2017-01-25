@@ -1,0 +1,11 @@
+gcloud container clusters get-credentials kubedemoc --zone us-east1-b --project spinnaker-launcher-main
+    
+kubectl proxy --port=8001
+
+gcloud container clusters describe kubedemoc --zone us-east1-b
+
+kubectl cluster-info
+
+# remove user-info from web preview
+# https://8082-dot-2224674-dot-devshell.appspot.com/api/v1/pods
+# 
