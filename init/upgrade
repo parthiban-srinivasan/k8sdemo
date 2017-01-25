@@ -1,0 +1,31 @@
+# Get available master & nodepool versions available
+
+gcloud container get-server-config --zone=$ZONE_PRIME
+
+# Enablng autoupgrade for nodepools in a cluster
+
+gcloud beta container node-pools update nodepool-$IN_GKE_NAME-highcpu  --cluster $IN_GKE_NAME --zone=$ZONE_PRIME --enable-autoupgrade
+
+# Upgrade master to particular version
+
+gcloud beta container clusters upgrade $IN_GKE_NAME --async --master --cluster-version=1.5.2 --zone=us-east1-b
+
+# Upgrade nodepools to particular version
+
+gcloud beta container clusters upgrade $IN_GKE_NAME --async --node-pool=nodepool-$IN_GKE_NAME-highcpu --cluster-version=1.5.2 --zone=us-east1-b
+
+
+## gcloud beta container clusters upgrade kubedemoc --async --node-pool=nodepool-kubedemoc-highcpu --cluster-version=1.5.1 --zone us-east1-b 
+
+# ignore below 
+
+# gcloud container clusters upgrade $IN_GKE_NAME --async --master --node-pool=nodepool-$IN_GKE_NAME-highcpu
+#        --cluster-version=$CLUSTER_VERSION  --zone=$ZONE_PRIME
+        
+# gcloud beta container clusters upgrade kubedemoc --async --master --cluster-version=1.5.2 --zone=us-east1-b
+ 
+#  nodepool-kubedemoc-highcpu 
+   
+#        --image-type=IMAGE_TYPE]
+#        [--master] [--node-pool=NODE_POOL] [--wait] [--zone=ZONE, -z ZONE]
+#        [GLOBAL-FLAG ...]
