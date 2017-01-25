@@ -3,7 +3,7 @@
 #-input proj
 PROJECT=spinnaker-launcher-main
 
-ZONE_PRIME=us-east1-a
+ZONE_PRIME=us-east1-b
 
 #REGION=us-central1
 
